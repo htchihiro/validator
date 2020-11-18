@@ -60,7 +60,7 @@ else:
 	sys.exit("ERROR 1.0.1: skip_dense can be 0 or 1")
 
 # Open vcfflile on read only
-vcf_data = open("vcfflile", "r")
+vcf_data = open("vcfflile", "r") or die("Failed to open the VCF file")
 
 for line in vcf_data:
 #    print(line)
