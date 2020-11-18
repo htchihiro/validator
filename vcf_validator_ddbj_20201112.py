@@ -8,6 +8,7 @@
 #ここまで
 
 #-getseq_path GetSeqFromFasta.pl は固定にする？
+# fastaは指定するようにするか、自由か
 
 import argparse
 
@@ -29,6 +30,7 @@ print('path_to_fasta='+args.path_to_fasta)
 
 import os
 import sys
+import re
 
 vcf_exist = os.path.isfile(vcffile)
 if vcf_exist:
@@ -61,67 +63,84 @@ else:
 
 # Open vcfflile on read only
 vcf_data = open("vcfflile", "r") or die("Failed to open the VCF file")
+a = 0
+
+curr_chr = 0
+previous_pos = 0
 
 for line in vcf_data:
 #    print(line)
 	if line.startswith('##fileformat'): #vcfのバージョンをチェックする
 		if re.search('4\.[1-3]$', line):
-			pass
+			a += 1
 		else:
 			sys.exit("ERROR 1.0.1: Illegal vcf version")
-	if line.startswith('##reference'):
+	elif line.startswith('##reference'):
 		if line.search('path_to_fasta', line)
-			pass
+			a += 1
 		else:
 			sys.exit("ERROR 1.0.1: The entered fasta and the used fasta do not match")
-	if line.startswith('##INFO'):
+	elif line.startswith('##INFO'):
 		
-	if line.startswith('##FORMAT'):
+	elif line.startswith('##FORMAT'):
 
-	if line.startswith('##FILTER'):
+	elif line.startswith('##FILTER'):
 	
-	if line.startswith('##fileformat'):
+	elif line.startswith('##fileformat'):
 	
-	if line.startswith('#header'): #headerが不正でないか確認する
+	elif line.startswith('#header'): #headerが不正でないか確認する
+		a += 1
 		header_clm = line.split()
 		if header_clm[0] == '#CHROM':
-			pass
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on #CHROM")
 		if header_clm[1] == 'POS':
-			pass
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on POS")
 		if header_clm[2] == 'ID':
-			pass
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on ID")
 		if header_clm[3] == 'REF':
-			pass
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on REF")
 		if header_clm[4] == 'ALT':
-			pass
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on ALT")
 		if header_clm[5] == 'QUAL':
-			pass
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on QUAL")
 		if header_clm[6] == 'FILTER':
-			pass
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on FILTER")
 		if header_clm[7] == 'INFO':
-			pass
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on INFO")
-		if header_clm[8] == 'FORMAT':
-			pass
+	else:
+		if a != 7: #body に入るときに項目が揃っているか確認する
+			sys.exit("ERROR 1.0.1: Something is missing in ##")
 		else:
-			sys.exit("ERROR 1.0.1: This vcf is not a standard format on FORMAT")
+				fields = line.split()
+				chr_number = re.compile('\d+')
+				chr = chr_number.findall(fields[0])0
+				position = fields[1]
+				if chr < curr_chr:
+					sys.exit("ERROR 1.0.1: Chromosome position is larger then chromosome size")
+				else:
+					if not position.isdecimal():
+						sys.exit("ERROR 1.0.1: positions should be numbers")
+					else:
+						pass
+					if chr == curr_chr:
+						if not position > previous_pos:
+							sys.exit("ERROR 1.0.1: Data are not sorted base on positions")
+						else:
+							previous_pos = fields[1]
+					else:
+						curr_chr = fields[0]
+						previous_pos = fields[1]
 
-#body
+
+
 #CHRからINFOの前までの硬い部分のチェック
 
 #INFOにしようされているタグが##と一致するか確認する
