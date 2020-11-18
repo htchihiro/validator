@@ -61,8 +61,13 @@ if skip_dense = (0|1) :
 else:
 	sys.exit("ERROR 1.0.1: skip_dense can be 0 or 1")
 
+#fasta のチェックを先にしておく必要がある
+fasta_file = open("path_to_fasta") or die("Failed to open the fasta file")
+
+
+
 # Open vcfflile on read only
-vcf_data = open("vcfflile", "r") or die("Failed to open the VCF file")
+vcf_data = open("vcfflile") or die("Failed to open the VCF file")
 a = 0
 
 curr_chr = 0
@@ -138,7 +143,24 @@ for line in vcf_data:
 					else:
 						curr_chr = fields[0]
 						previous_pos = fields[1]
-
+				if fields[3].isdecimal():
+					pass
+				elif fields[3] == "\." or fields[3] == "-":
+					move_position = 1
+					fields[2] = fields[2] - 1
+					#hit_line = [fasta_line for fasta_line in fasta_file if fields[2] in fasta_line]
+					#split_hit_line = hit_line.split()
+					#add_allele = split_hit_line[]
+				else:
+					sys.exit("ERROR 1.0.1: Illegal characters are used in reference allele")
+				if fields[4].isdecimal():
+					pass
+				elif fields[4] == "\." or fields[4] == "-":
+					move_position = 1
+					fields[2] = fields[2] - 1
+					#hit_line = [fasta_line for fasta_line in fasta_file if fields[2] in fasta_line]
+				else:
+					sys.exit("ERROR 1.0.1: Illegal characters are used in alternative allele")
 
 
 #CHRからINFOの前までの硬い部分のチェック
