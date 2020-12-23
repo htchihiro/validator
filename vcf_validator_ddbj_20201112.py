@@ -10,6 +10,8 @@
 #-getseq_path GetSeqFromFasta.pl は固定にする？
 # fastaは指定するようにするか、自由か
 
+#bcftoolsを経るならフォーマットチェックは不要？
+
 import argparse
 
 parser = argparse.ArgumentParser(description='Validation tool for human genome vcffile') #Make parser
@@ -69,6 +71,7 @@ fasta_file = open("path_to_fasta") or die("Failed to open the fasta file")
 # Open vcfflile on read only
 vcf_data = open("vcfflile") or die("Failed to open the VCF file")
 a = 0
+b = 0
 
 curr_chr = 0
 previous_pos = 0
@@ -80,6 +83,14 @@ for line in vcf_data:
 			a += 1
 		else:
 			sys.exit("ERROR 1.0.1: Illegal vcf version")
+	elif line.startswith('##fileDate'):
+		import datetime
+		tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+		filedate = regex.findall(line)
+		if tomorrow.strftime("%Y%m%d") > filedate.strftime("%Y%m%d") #filedateが未来になっているものは不正
+			a += 1
+		else:
+			sys.exit("ERROR 1.0.1: Illegal vcf file date")
 	elif line.startswith('##reference'):
 		if line.search('path_to_fasta', line)
 			a += 1
@@ -91,37 +102,43 @@ for line in vcf_data:
 
 	elif line.startswith('##FILTER'):
 	
-	elif line.startswith('##fileformat'):
-	
 	elif line.startswith('#header'): #headerが不正でないか確認する
 		a += 1
 		header_clm = line.split()
 		if header_clm[0] == '#CHROM':
+			b += 1
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on #CHROM")
 		if header_clm[1] == 'POS':
+			b += 1
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on POS")
 		if header_clm[2] == 'ID':
+			b += 1
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on ID")
 		if header_clm[3] == 'REF':
+			b += 1
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on REF")
 		if header_clm[4] == 'ALT':
+			b += 1
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on ALT")
 		if header_clm[5] == 'QUAL':
+			b += 1
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on QUAL")
 		if header_clm[6] == 'FILTER':
+			b += 1
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on FILTER")
 		if header_clm[7] == 'INFO':
+			b += 1
 		else:
 			sys.exit("ERROR 1.0.1: This vcf is not a standard format on INFO")
 	else:
-		if a != 7: #body に入るときに項目が揃っているか確認する
+		if a != 4 or b != 8: #body に入るときにheader項目が揃っているか確認する
 			sys.exit("ERROR 1.0.1: Something is missing in ##")
 		else:
 				fields = line.split()
@@ -143,25 +160,34 @@ for line in vcf_data:
 					else:
 						curr_chr = fields[0]
 						previous_pos = fields[1]
-				if fields[3].isdecimal():
-					pass
-				elif fields[3] == "\." or fields[3] == "-":
-					move_position = 1
-					fields[2] = fields[2] - 1
-					#hit_line = [fasta_line for fasta_line in fasta_file if fields[2] in fasta_line]
-					#split_hit_line = hit_line.split()
-					#add_allele = split_hit_line[]
+				if fields[3] == fields[4]:
+					sys.exit("ERROR 1.0.1: Reference allele and alternative alleles are the same")
+				if re.search('[^ATGC]', $fields[3]): #REF is only allowed for AGCT
+					if fields[3] == "\." or fields[3] == "-": #Some submitter use "-" for Insertions
+						move_position = 1
+						fields[2] = fields[2] - 1
+						#hit_line = [fasta_line for fasta_line in fasta_file if fields[2] in fasta_line]
+						#split_hit_line = hit_line.split()
+						#add_allele = split_hit_line[]
+					else:
+						sys.exit("ERROR 1.0.1: Illegal characters are used in reference allele")
+				elif len($fields[3]) == 0 : #ref allele missing
+					sys.exit("ERROR 1.0.1: Reference allele missing")
 				else:
-					sys.exit("ERROR 1.0.1: Illegal characters are used in reference allele")
-				if fields[4].isdecimal():
 					pass
-				elif fields[4] == "\." or fields[4] == "-":
-					move_position = 1
-					fields[2] = fields[2] - 1
-					#hit_line = [fasta_line for fasta_line in fasta_file if fields[2] in fasta_line]
+				if re.search('[^ATGC]', $fields[4]) : #ALT is only allowed for AGCT
+					if fields[4] == "\." or fields[4] == "-": #Some submitter use "-" for Insertions
+						move_position = 1
+						fields[2] = fields[2] - 1
+						#hit_line = [fasta_line for fasta_line in fasta_file if fields[2] in fasta_line]
+						#split_hit_line = hit_line.split()
+						#add_allele = split_hit_line[]
+					else:
+						sys.exit("ERROR 1.0.1: Illegal characters are used in alternative allele")
+				elif len($fields[4]) == 0 : #alt allele missing
+					sys.exit("ERROR 1.0.1: Alternative allele missing")
 				else:
-					sys.exit("ERROR 1.0.1: Illegal characters are used in alternative allele")
-
+					pass
 
 #CHRからINFOの前までの硬い部分のチェック
 
@@ -171,3 +197,21 @@ for line in vcf_data:
 
  
 vcf_data.close() # 開いたファイルを閉じる
+
+
+#いれたら良さそうなエラー候補
+
+";ERR_LINE_EMPTY=Line is empty"
+";ERR_VRT_NOT_DEFINED=variation type not defined"
+";ERR_CHR_NOT_GROUPED=Data on the same chromosome are not grouped together"
+";ERR_CHR=invalid chromosome name"
+";ERR_VARI_LENGTH_INDEL=Indels with variable length alleles"
+";ERR_DUP_SITES=Duplicated sites"
+";ERR_SPACE_REF=Extra space before/after ref. allele"
+
+
+	    if((substr($alleles[$i], 0, 1) ne substr($fields[3], 0, 1)) && (length($fields[3]) > 1 || length($alleles[$i]) > 1)) {
+		$current_line_error = 1;
+		$self->{result}->{ERR}->{ERR_INVALID_INDEL_MNV_FMT}->{counter}++;
+		$line .= ";ERR_INVALID_INDEL_MNV_FMT=Ref and alt alleles don not have common leading base";
+	    }
