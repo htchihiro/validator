@@ -104,7 +104,7 @@ for line in vcf_data:
 			a += 1
 			print("pass ##fileformat")
 		else:
-			sys.exit("ERROR 1.0.1: Illegal vcf version")
+			print("WARNING 1.0.1: Illegal vcf version")
 	elif line.startswith('##fileDate'):
 		import datetime
 		tomorrow = str(datetime.date.today() + datetime.timedelta(days=1))
@@ -113,13 +113,13 @@ for line in vcf_data:
 			a += 1
 			print("pass ##filedate")
 		else:
-			sys.exit("ERROR 1.0.1: Illegal vcf file date")
+			print("WARNING 1.0.1: Illegal vcf file date")
 	elif line.startswith('##reference'):
 		if re.search(path_to_fasta, line):
 			a += 1
 			print("pass ##reference")
 		else:
-			sys.exit("ERROR 1.0.1: The entered fasta and the used fasta do not match")
+			print("WARNING 1.0.1: The entered fasta and the used fasta do not match")
 	elif line.startswith('##INFO'): #later add
 		pass
 	elif line.startswith('##FORMAT'): #later add
@@ -134,35 +134,35 @@ for line in vcf_data:
 			b += 1
 		else:
 			print(header_clm[0])
-			sys.exit("ERROR 1.0.1: This vcf is not a standard format on CHROM")
+			print("WARNING 1.0.1: This vcf is not a standard format on CHROM")
 		if header_clm[1] == 'POS':
 			b += 1
 		else:
-			sys.exit("ERROR 1.0.1: This vcf is not a standard format on POS")
+			print("WARNING 1.0.1: This vcf is not a standard format on POS")
 		if header_clm[2] == 'ID':
 			b += 1
 		else:
-			sys.exit("ERROR 1.0.1: This vcf is not a standard format on ID")
+			print("WARNING 1.0.1: This vcf is not a standard format on ID")
 		if header_clm[3] == 'REF':
 			b += 1
 		else:
-			sys.exit("ERROR 1.0.1: This vcf is not a standard format on REF")
+			print("WARNING 1.0.1: This vcf is not a standard format on REF")
 		if header_clm[4] == 'ALT':
 			b += 1
 		else:
-			sys.exit("ERROR 1.0.1: This vcf is not a standard format on ALT")
+			print("WARNING 1.0.1: This vcf is not a standard format on ALT")
 		if header_clm[5] == 'QUAL':
 			b += 1
 		else:
-			sys.exit("ERROR 1.0.1: This vcf is not a standard format on QUAL")
+			print("WARNING 1.0.1: This vcf is not a standard format on QUAL")
 		if header_clm[6] == 'FILTER':
 			b += 1
 		else:
-			sys.exit("ERROR 1.0.1: This vcf is not a standard format on FILTER")
+			print("WARNING 1.0.1: This vcf is not a standard format on FILTER")
 		if header_clm[7] == 'INFO':
 			b += 1
 		else:
-			sys.exit("ERROR 1.0.1: This vcf is not a standard format on INFO")
+			print("WARNING 1.0.1: This vcf is not a standard format on INFO")
 	elif line.startswith('##'):
 			pass
 	else:
@@ -176,24 +176,24 @@ for line in vcf_data:
 				chr = str(chr_number.replace('chr', ''))
 				position = str(fields[1])
 				if chr < curr_chr:
-					sys.exit("ERROR 1.0.1: Chromosome position is larger then chromosome size")
+					print("WARNING 1.0.1: Chromosome position is larger then chromosome size")
 				else:
 					if not position.isdigit():
-						sys.exit("ERROR 1.0.1: positions should be numbers")
+						print("WARNING 1.0.1: positions should be numbers")
 					else:
 						pass
 					if chr == curr_chr:
 						if position < previous_pos:
 							print (position)
 							print (previous_pos)
-							sys.exit("ERROR 1.0.1: Data are not sorted base on positions")
+							print("WARNING 1.0.1: Data are not sorted base on positions")
 						else:
 							previous_pos = fields[1]
 					else:
 						curr_chr = chr
 						previous_pos = fields[1]
 				if fields[3] == fields[4]:
-					sys.exit("ERROR 1.0.1: Reference allele and alternative alleles are the same")
+					print("WARNING 1.0.1: Reference allele and alternative alleles are the same")
 				if re.search('[^ATGC]', fields[3]): #REF is only allowed for AGCT
 					if fields[3] == "\." or fields[3] == "-": #Some submitter use "-" for Insertion
 						move_position = 1
@@ -203,9 +203,9 @@ for line in vcf_data:
 						new_alt = fasta_nuc + fields[4] #fastaから取得した-1ポジションの塩基をもともとの塩基の前に追加する必要がある
 						fields[4] = new_alt
 					else:
-						sys.exit("ERROR 1.0.1: Illegal characters are used in reference allele")
+						print("WARNING 1.0.1: Illegal characters are used in reference allele")
 				elif len(fields[3]) == 0 : #ref allele missing
-					sys.exit("ERROR 1.0.1: Reference allele missing")
+					print("WARNING 1.0.1: Reference allele missing")
 				else:
 					pass
 				if re.search('[^ATGC]', fields[4]) : #ALT is only allowed for AGCT
@@ -220,9 +220,9 @@ for line in vcf_data:
 						#split_hit_line = hit_line.split()
 						#add_allele = split_hit_line[]
 					else:
-						sys.exit("ERROR 1.0.1: Illegal characters are used in alternative allele")
+						print("WARNING 1.0.1: Illegal characters are used in alternative allele")
 				elif len(fields[4]) == 0 : #alt allele missing
-					sys.exit("ERROR 1.0.1: Alternative allele missing")
+					print("WARNING 1.0.1: Alternative allele missing")
 				else:
 					pass
 		if move_position = 0
