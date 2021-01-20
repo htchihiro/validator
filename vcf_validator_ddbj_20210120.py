@@ -214,20 +214,19 @@ for line in vcf_data:
 					print("WARNING 1.0.1: Reference allele missing")
 				else:
 					prev_one = int(fields[1]) - 1
-					ref_bed = "chr"+str(chr)+" "+str(prev_one)+" "+str(fields[1])
-					cmd = "bedtools getfasta -fi "+str(fasta_file)+" -bed ref_bed -fo ref_out"
+					ref_bed = open('ref_bed.bed','w')
+					ref_bed.write("chr"+str(chr)+"\t"+str(prev_one)+"\t"+str(fields[1]))
+					ref_bed.close()
+					cmd = "bedtools getfasta -fi "+str(fasta_for_validation)+" -bed ref_bed.bed -fo ref_out.bed"
 					subprocess.call(cmd.split())
-					output_bedtools = open( ref_out ) or die("Failed to open the output file of bedtools")
+					output_bedtools = open( "ref_out.bed" ) or die("Failed to open the output file of bedtools")
 					for fasta_nuc in output_bedtools:
-						if line.startswith('>'): #skip headder
+						if re.search('>', fasta_nuc): #skip headder
 							pass
 						else:
-							if field[3] == fasta_nuc:
-								pass
-							else:
-								print("WARNING 1.0.1: dosen't match reference allele")
-					ref_out.close()
-					ref_out = ""
+							if str(fields[3]) != str(fasta_nuc[0]):
+								print(fields[3]+" "+fasta_nuc+"WARNING 1.0.1: Dosen't match reference allele")
+					ref_bed = ""
 				if re.search('[^ATGC]', fields[4]) : #ALT is only allowed for AGCT
 					if fields[4] == "\." or fields[4] == "-": #Some submitter use "-" for Deletion
 						print("WARNING 1.0.1: This vcf file uses - or . for alternative colum")
