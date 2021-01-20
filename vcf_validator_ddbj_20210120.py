@@ -11,8 +11,8 @@ import argparse
 parser = argparse.ArgumentParser(description='Validation tool for human genome vcffile') #Make parser
 
 parser.add_argument('vcffile', help='Imput vcf file which you want to validate')
-parser.add_argument('gi_list_file', help='Imput gi list file')
-parser.add_argument('skip_dense', help='Enter 0 or 1')
+parser.add_argument('gi_list_file', help='Imput gi list file') #Unnecessary?
+parser.add_argument('skip_dense', help='Enter 0 or 1') #Unnecessary?
 parser.add_argument('fasta_for_validation', help='Imput fasta')
 
 arge = parser.parse_args()
@@ -255,20 +255,3 @@ for line in vcf_data:
 				else:
 					pass
 vcf_data.close()
-
-#candidate of error
-
-#";ERR_LINE_EMPTY=Line is empty"
-#";ERR_VRT_NOT_DEFINED=variation type not defined"
-#";ERR_CHR_NOT_GROUPED=Data on the same chromosome are not grouped together"
-#";ERR_CHR=invalid chromosome name"
-#";ERR_VARI_LENGTH_INDEL=Indels with variable length alleles"
-#";ERR_DUP_SITES=Duplicated sites"
-#";ERR_SPACE_REF=Extra space before/after ref. allele"
-
-
-#	    if((substr($alleles[$i], 0, 1) ne substr($fields[3], 0, 1)) && (length($fields[3]) > 1 || length($alleles[$i]) > 1)) {
-#		$current_line_error = 1;
-#		$self->{result}->{ERR}->{ERR_INVALID_INDEL_MNV_FMT}->{counter}++;
-#		$line .= ";ERR_INVALID_INDEL_MNV_FMT=Ref and alt alleles don not have common leading base";
-#	    }
