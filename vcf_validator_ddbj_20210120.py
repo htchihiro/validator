@@ -20,7 +20,7 @@ arge = parser.parse_args()
 print('vcffile='+arge.vcffile)
 print('gi_list_file='+arge.gi_list_file)
 print('skip_dense='+arge.skip_dense)
-print('fasta_for_validation='+arge.path_to_fasta)
+print('fasta_for_validation='+arge.fasta_for_validation)
 
 vcffile = arge.vcffile
 gi_list_file = arge.gi_list_file
@@ -32,6 +32,7 @@ fasta_for_validation = arge.fasta_for_validation
 import os
 import sys
 import re
+import subprocess
 
 vcf_exist = os.path.isfile(vcffile)
 if vcf_exist:
@@ -67,16 +68,17 @@ fasta_file = open(fasta_for_validation) or die("Failed to open the fasta file")
 
 #for bcftools same as TogoVar
 
-path_to_bcftools=/path/to/bcftools/
+#comment out
+#path_to_bcftools=/path/to/bcftools/
 
-${path_to_bcftools}bcftools norm -m - -o ${vcffile}.gz -O z --threads 32 ${vcffile} -f ${fasta_for_validation}
+#${path_to_bcftools}bcftools norm -m - -o ${vcffile}.gz -O z --threads 32 ${vcffile} -f ${fasta_for_validation}
 
-normalized_vcf=${vcffile}.gz
+#normalized_vcf=${vcffile}.gz
 
 #for validation
 
 #Open vcfflile on read only
-vcf_data = open(normalized_vcf) or die("Failed to open the normalized-VCF file")
+vcf_data = open(vcffile) or die("Failed to open the normalized-VCF file")
 
 a = 0
 b = 0
@@ -84,12 +86,12 @@ b = 0
 curr_chr = 0
 previous_pos = 0
 
-#行数のカウントを追加したい
+#count of lines
 line_numbers = 0
 
 for line in vcf_data:
 #    print(line)
-line_numbers += 1
+	line_numbers += 1
 	if line.startswith('##fileformat'): #Checking VCF version
 		if re.search('4\.[1-3]$', line):
 			a += 1
@@ -106,7 +108,7 @@ line_numbers += 1
 		else:
 			print("WARNING 1.0.1: Illegal vcf file date")
 	elif line.startswith('##reference'):
-		if re.search(path_to_fasta, line):
+		if re.search(fasta_for_validation, line):
 			a += 1
 			print("pass ##reference")
 		else:
@@ -188,11 +190,11 @@ line_numbers += 1
 				if re.search('[^ATGC]', fields[3]): #REF is only allowed for AGCT
 					if fields[3] == "\." or fields[3] == "-": #Some submitter use "-" for Insertion
 						print("WARNING 1.0.1: This vcf file uses - or . for reference colum")
-						if len.(fields[4]) > 50:
+						if len(fields[4]) > 50:
 							print("WARNING 1.0.1: Insertion size is over 50bp")
 						else:
 							pass
-						#move_position = 1 #もし規格に合わせた修正をするなら以降は必要
+						#move_position = 1 #If we need to fix vcf files for standerd, add correction steps
 						#new_position = fields[2] - 1
 						#ref_bed = print ( chr"\t"new_position-1"\t"new_position)
 						#bedtools getfasta -fi $fasta_file -bed $ref_bed -fo ref_out
@@ -201,8 +203,8 @@ line_numbers += 1
 						#	if line.startswith('>'): #skip headder
 						#		pass
 						#	else:
-						#		fields[3] = fasta_nuc #fastaから取得した-1ポジションの塩基を入れる
-						#		new_alt = fasta_nuc + fields[4] #fastaから取得した-1ポジションの塩基をもともとの塩基の前に追加する必要がある
+						#		fields[3] = fasta_nuc
+						#		new_alt = fasta_nuc + fields[4]
 						#		fields[4] = new_alt
 						#ref_out.close()
 						#rm ref_out
@@ -211,27 +213,29 @@ line_numbers += 1
 				elif len(fields[3]) == 0 : #ref allele missing
 					print("WARNING 1.0.1: Reference allele missing")
 				else:
-					ref_bed = print ( chr"\t"fileds[2]-1"\t"fileds[2])
-					bedtools getfasta -fi $fasta_file -bed $ref_bed -fo ref_out
+					prev_one = int(fields[1]) - 1
+					ref_bed = "chr"+str(chr)+" "+str(prev_one)+" "+str(fields[1])
+					cmd = "bedtools getfasta -fi "+str(fasta_file)+" -bed ref_bed -fo ref_out"
+					subprocess.call(cmd.split())
 					output_bedtools = open( ref_out ) or die("Failed to open the output file of bedtools")
 					for fasta_nuc in output_bedtools:
 						if line.startswith('>'): #skip headder
 							pass
 						else:
-							if field[3] == fasta_nuc: #塩基が一致するか
+							if field[3] == fasta_nuc:
 								pass
 							else:
 								print("WARNING 1.0.1: dosen't match reference allele")
 					ref_out.close()
-					rm ref_out
+					ref_out = ""
 				if re.search('[^ATGC]', fields[4]) : #ALT is only allowed for AGCT
 					if fields[4] == "\." or fields[4] == "-": #Some submitter use "-" for Deletion
 						print("WARNING 1.0.1: This vcf file uses - or . for alternative colum")
-						if len.(fields[3]) > 50:
+						if len(fields[3]) > 50:
 							print("WARNING 1.0.1: Deletion size is over 50bp")
 						else:
 							pass
-                        #move_position = 1 #もし規格に合わせた修正をするなら以降は必要
+                        #move_position = 1 #If we need to fix vcf files for standerd, add correction steps
 						#new_position = fields[2] - 1
 						#ref_bed = print ( chr"\t"new_position-1"\t"new_position)
 						#bedtools getfasta -fi $fasta_file -bed $ref_bed -fo ref_out
@@ -240,8 +244,8 @@ line_numbers += 1
 						#	if line.startswith('>'): #skip headder
 						#		pass
 						#	else:
-						#		fields[4] = fasta_nuc #fastaから取得した-1ポジションの塩基を入れる
-						#		new_ref = fasta_nuc + fields[3] #fastaから取得した-1ポジションの塩基をもともとの塩基の前に追加する必要がある
+						#		fields[4] = fasta_nuc
+						#		new_ref = fasta_nuc + fields[3]
 						#		fields[3] = new_ref
 						#ref_out.close()
 						#rm ref_out
