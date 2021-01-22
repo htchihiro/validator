@@ -213,8 +213,8 @@ for line in vcf_data:
 				elif len(fields[3]) == 0 : #ref allele missing
 					print(str(line_numbers) + " WARNING 1.0.1: Reference allele missing")
 				else:
-					if len(fields[3]) > len(fields[4]): #For delition cases
-						back_one = int(fields[1]) + 1
+					if len(fields[3]) > len(fields[4]): #For deletion cases
+						back_one = int(fields[1]) + int(len(fields[3])) - 1
 					else:
 						back_one = int(fields[1])
 					prev_one = int(fields[1]) - 1
@@ -231,7 +231,7 @@ for line in vcf_data:
 							fn_search = re.search(r'([ATGC]+)', fasta_nuc)
 							fn_ex = fn_search.group()
 							if str(fields[3]) != str(fn_ex):
-								print(str(line_numbers) + "vcf " +str(fields[3]) + "ref " +str(fn_ex) + " WARNING 1.0.1: Dosen't match reference allele")
+								print(str(line_numbers) + "_vcf:" +str(fields[3]) + "_ref:" +str(fn_ex) + " WARNING 1.0.1: Dosen't match reference allele")
 					ref_bed = ""
 				if re.search('[^ATGC]', fields[4]) : #ALT is only allowed for AGCT
 					if fields[4] == "\." or fields[4] == "-": #Some submitter use "-" for Deletion
