@@ -33,6 +33,7 @@ import os
 import sys
 import re
 import subprocess
+import linecache
 
 vcf_exist = os.path.isfile(vcffile)
 if vcf_exist:
@@ -65,6 +66,11 @@ else:
 
 #Checking fasta
 fasta_file = open(fasta_for_validation) or die("Failed to open the fasta file")
+firstrow = fasta_file.readlines()[0]
+if re.search('chr[0-9]+', firstrow):
+	chr_marke = 1
+else:
+	chr_marke = 0
 
 #for bcftools same as TogoVar
 
@@ -219,7 +225,10 @@ for line in vcf_data:
 						back_one = int(fields[1])
 					prev_one = int(fields[1]) - 1
 					ref_bed = open('ref_bed.bed','w')
-					ref_bed.write("chr"+str(chr)+"\t"+str(prev_one)+"\t"+str(back_one))
+					if chr_marke == 1 :
+						ref_bed.write("chr"+str(chr)+"\t"+str(prev_one)+"\t"+str(back_one))
+					else:
+						ref_bed.write(str(chr)+"\t"+str(prev_one)+"\t"+str(back_one))
 					ref_bed.close()
 					cmd = "bedtools getfasta -fi "+str(fasta_for_validation)+" -bed ref_bed.bed -fo ref_out.bed"
 					subprocess.call(cmd.split())
