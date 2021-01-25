@@ -11,20 +11,20 @@ import argparse
 parser = argparse.ArgumentParser(description='Validation tool for human genome vcffile') #Make parser
 
 parser.add_argument('vcffile', help='Imput vcf file which you want to validate')
-parser.add_argument('gi_list_file', help='Imput gi list file') #Unnecessary?
-parser.add_argument('skip_dense', help='Enter 0 or 1') #Unnecessary?
+#parser.add_argument('gi_list_file', help='Imput gi list file') #Unnecessary?
+#parser.add_argument('skip_dense', help='Enter 0 or 1') #Unnecessary?
 parser.add_argument('fasta_for_validation', help='Imput fasta')
 
 arge = parser.parse_args()
 
 print('vcffile='+arge.vcffile)
-print('gi_list_file='+arge.gi_list_file)
-print('skip_dense='+arge.skip_dense)
+#print('gi_list_file='+arge.gi_list_file)
+#print('skip_dense='+arge.skip_dense)
 print('fasta_for_validation='+arge.fasta_for_validation)
 
 vcffile = arge.vcffile
-gi_list_file = arge.gi_list_file
-skip_dense = arge.skip_dense
+#gi_list_file = arge.gi_list_file
+#skip_dense = arge.skip_dense
 fasta_for_validation = arge.fasta_for_validation
 
 #Exist check of imput files or path
@@ -45,11 +45,11 @@ if vcf_exist:
 else:
 	sys.exit("ERROR 1.0.1: vcf file is blank or not a file")
 
-gi_exist = os.path.isfile(gi_list_file)
-if gi_exist:
-	pass
-else:
-	sys.exit("ERROR 1.0.1: gi_list file is blank or not a file")
+#gi_exist = os.path.isfile(gi_list_file)
+#if gi_exist:
+#	pass
+#else:
+#	sys.exit("ERROR 1.0.1: gi_list file is blank or not a file")
 
 path_fasta_exist = os.path.isfile(fasta_for_validation)
 if path_fasta_exist:
@@ -59,10 +59,10 @@ else:
 
 #Cheking a imput score of skip_dense
 
-if int(skip_dense) in [0,1] :
-	pass
-else:
-	sys.exit("ERROR 1.0.1: skip_dense can be 0 or 1")
+#if int(skip_dense) in [0,1] :
+#	pass
+#else:
+#	sys.exit("ERROR 1.0.1: skip_dense can be 0 or 1")
 
 #Checking fasta
 fasta_file = open(fasta_for_validation) or die("Failed to open the fasta file")
@@ -182,9 +182,9 @@ for line in vcf_data:
 					else:
 						pass
 					if chr == curr_chr:
-						if position < previous_pos:
-							print (position)
-							print (previous_pos)
+						if int(position) < int(previous_pos):
+							print ("previous:" + position)
+							print ("now:" + previous_pos)
 							print(str(line_numbers) + " WARNING 1.0.1: Data are not sorted base on positions")
 						else:
 							previous_pos = fields[1]
@@ -194,12 +194,16 @@ for line in vcf_data:
 				if fields[3] == fields[4]:
 					print(str(line_numbers) + " WARNING 1.0.1: Reference allele and alternative alleles are the same")
 				if re.search('[^ATGC]', fields[3]): #REF is only allowed for AGCT
-					if fields[3] == "\." or fields[3] == "-": #Some submitter use "-" for Insertion
+					if re.search('[MRWSYKVHDBN]', fields[3]) :
+						print(str(line_numbers) + "WARNING 1.0.1: No non-ATGC nucleotide or iupac ambiguity codes (ie. R, Y, etc.) are in either ref/alt alleles")
+					elif fields[3] == "\." or fields[3] == "-": #Some submitter use "-" for Insertion
 						print(str(line_numbers) + " WARNING 1.0.1: This vcf file uses - or . for reference colum")
-						if len(fields[4]) > 50:
-							print(str(line_numbers) + " WARNING 1.0.1: Insertion size is over 50bp")
-						else:
-							pass
+					else:
+						print(str(line_numbers) + " WARNING 1.0.1: Illegal characters are used in reference allele")
+					if len(fields[4]) > 50:
+						print(str(line_numbers) + " WARNING 1.0.1: Insertion size is over 50bp")
+					else:
+						pass
 						#move_position = 1 #If we need to fix vcf files for standerd, add correction steps
 						#new_position = fields[2] - 1
 						#ref_bed = print ( chr"\t"new_position-1"\t"new_position)
@@ -213,9 +217,7 @@ for line in vcf_data:
 						#		new_alt = fasta_nuc + fields[4]
 						#		fields[4] = new_alt
 						#ref_out.close()
-						#rm ref_out
-					else:
-						print(str(line_numbers) + " WARNING 1.0.1: Illegal characters are used in reference allele")
+						#rm ref_out					
 				elif len(fields[3]) == 0 : #ref allele missing
 					print(str(line_numbers) + " WARNING 1.0.1: Reference allele missing")
 				else:
@@ -243,12 +245,12 @@ for line in vcf_data:
 								print(str(line_numbers) + "_vcf:" +str(fields[3]) + "_ref:" +str(fn_ex) + " WARNING 1.0.1: Dosen't match reference allele")
 					ref_bed = ""
 				if re.search('[^ATGC]', fields[4]) : #ALT is only allowed for AGCT
-					if fields[4] == "\." or fields[4] == "-": #Some submitter use "-" for Deletion
+					if re.search('[MRWSYKVHDBN]', fields[4]) :
+						print(str(line_numbers) + "WARNING 1.0.1: No non-ATGC nucleotide or iupac ambiguity codes (ie. R, Y, etc.) are in either ref/alt alleles")
+					elif fields[4] == "\." or fields[4] == "-": #Some submitter use "-" for Deletion
 						print(str(line_numbers) + " WARNING 1.0.1: This vcf file uses - or . for alternative colum")
-						if len(fields[3]) > 50:
-							print(str(line_numbers) + " WARNING 1.0.1: Deletion size is over 50bp")
-						else:
-							pass
+					if len(fields[3]) > 50:
+						print(str(line_numbers) + " WARNING 1.0.1: Deletion size is over 50bp")
                         #move_position = 1 #If we need to fix vcf files for standerd, add correction steps
 						#new_position = fields[2] - 1
 						#ref_bed = print ( chr"\t"new_position-1"\t"new_position)
@@ -265,6 +267,8 @@ for line in vcf_data:
 						#rm ref_out
 					else:
 						print(str(line_numbers) + " WARNING 1.0.1: Illegal characters are used in alternative allele")
+				elif re.search(",", fields[4]) : #For multi-allelic
+					print(str(line_numbers) + "WARNING 1.0.1: Please sepalate the multi-allelic")
 				elif len(fields[4]) == 0 : #alt allele missing
 					print(str(line_numbers) + " WARNING 1.0.1: Alternative allele missing")
 				else:
