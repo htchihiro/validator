@@ -195,7 +195,7 @@ for line in vcf_data:
 					print(str(line_numbers) + " WARNING 1.0.1: Reference allele and alternative alleles are the same")
 				if re.search('[^ATGC]', fields[3]): #REF is only allowed for AGCT
 					if re.search('[MRWSYKVHDBN]', fields[3]) :
-						print(str(line_numbers) + "WARNING 1.0.1: No non-ATGC nucleotide or iupac ambiguity codes (ie. R, Y, etc.) are in either ref/alt alleles")
+						print(str(line_numbers) + " WARNING 1.0.1: No non-ATGC nucleotide or iupac ambiguity codes (ie. R, Y, etc.) are in either reference alleles")
 					elif fields[3] == "\." or fields[3] == "-": #Some submitter use "-" for Insertion
 						print(str(line_numbers) + " WARNING 1.0.1: This vcf file uses - or . for reference colum")
 					else:
@@ -246,9 +246,11 @@ for line in vcf_data:
 					ref_bed = ""
 				if re.search('[^ATGC]', fields[4]) : #ALT is only allowed for AGCT
 					if re.search('[MRWSYKVHDBN]', fields[4]) :
-						print(str(line_numbers) + "WARNING 1.0.1: No non-ATGC nucleotide or iupac ambiguity codes (ie. R, Y, etc.) are in either ref/alt alleles")
+						print(str(line_numbers) + " WARNING 1.0.1: No non-ATGC nucleotide or iupac ambiguity codes (ie. R, Y, etc.) are in alternative alleles")
 					elif fields[4] == "\." or fields[4] == "-": #Some submitter use "-" for Deletion
 						print(str(line_numbers) + " WARNING 1.0.1: This vcf file uses - or . for alternative colum")
+					else:
+						print(str(line_numbers) + " WARNING 1.0.1: Illegal characters are used in alternative allele")
 					if len(fields[3]) > 50:
 						print(str(line_numbers) + " WARNING 1.0.1: Deletion size is over 50bp")
                         #move_position = 1 #If we need to fix vcf files for standerd, add correction steps
@@ -265,8 +267,6 @@ for line in vcf_data:
 						#		fields[3] = new_ref
 						#ref_out.close()
 						#rm ref_out
-					else:
-						print(str(line_numbers) + " WARNING 1.0.1: Illegal characters are used in alternative allele")
 				elif re.search(",", fields[4]) : #For multi-allelic
 					print(str(line_numbers) + "WARNING 1.0.1: Please sepalate the multi-allelic")
 				elif len(fields[4]) == 0 : #alt allele missing
@@ -274,5 +274,5 @@ for line in vcf_data:
 				else:
 					pass
 else:
-	print (str(line_numbers) + " All lines of vcf were validated! Please check the log file")
+	print (str(line_numbers) + " All lines of vcf were validated! Please check errors and/or warnings in the log file")
 vcf_data.close()
