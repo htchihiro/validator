@@ -1,0 +1,14 @@
+version: '3'
+services:
+  ddbj_vcf_validator:
+    container_name: ${DDBJ_VCF_VALIDATOR_APP_CONTAINER_NAME:-ddbj_vcf_validator_app}
+    image: ${DDBJ_VCF_VALIDATOR_APP_IMAGE_NAME:-ddbj_vcf_validator_app}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    tty: true
+    user: ${UID:-0}:${GID:-0}
+    volumes:
+      - ${PWD}:/app
+      - ${PWD}/data:/data
+      - ${PWD}/log:/log
