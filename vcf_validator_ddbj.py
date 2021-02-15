@@ -34,6 +34,7 @@ import sys
 import re
 import subprocess
 import linecache
+import gzip
 
 vcf_exist = os.path.isfile(vcffile)
 if vcf_exist:
@@ -65,7 +66,7 @@ else:
 #	sys.exit("ERROR 1.0.1: skip_dense can be 0 or 1")
 
 #Checking fasta
-fasta_file = gzip.open(fasta_for_validation) or die("Failed to open the fasta file")
+fasta_file = open(fasta_for_validation) or die("Failed to open the fasta file")
 firstrow = fasta_file.readlines()[0]
 if re.search('chr[0-9]+', firstrow):
 	chr_marke = 1
@@ -84,7 +85,7 @@ else:
 #for validation
 
 #Open vcfflile on read only
-vcf_data = open(vcffile) or die("Failed to open the normalized-VCF file")
+vcf_data = gzip.open(vcffile) or die("Failed to open the normalized-VCF file")
 
 a = 0
 b = 0
@@ -180,7 +181,7 @@ for line in vcf_data:
 				else:
 					if not position.isdigit():
 						if chr != X or chr != Y:
-							pass:
+							pass
 						else:
 							print(str(line_numbers) + " WARNING 1.0.1: positions should be numbers")
 					else:
