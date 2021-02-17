@@ -35,11 +35,14 @@ import re
 import subprocess
 import linecache
 import gzip
+import codecs
+import time
+
+start_time = time.time()
 
 vcf_exist = os.path.isfile(vcffile)
 if vcf_exist:
-	line_cnt = sum([1 for _ in open(vcffile)])
-	if line_cnt == 1:
+	if os.path.getsize(vcffile) == 0:
 		sys.exit("ERROR 1.0.1: vcf file is empty")
 	else:
 		pass
@@ -86,6 +89,8 @@ else:
 
 #Open vcfflile on read only
 vcf_data = gzip.open(vcffile) or die("Failed to open the normalized-VCF file")
+reader = codecs.getreader("utf-8")
+vcf_lines = reader(vcf_data)
 
 a = 0
 b = 0
@@ -96,7 +101,7 @@ previous_pos = 0
 #count of lines
 line_numbers = 0
 
-for line in vcf_data:
+for line in vcf_lines:
 #    print(line)
 	line_numbers += 1
 	if line.startswith('##fileformat'): #Checking VCF version
@@ -176,8 +181,8 @@ for line in vcf_data:
 				chr_number = fields[0]
 				chr = str(chr_number.replace('chr', ''))
 				position = str(fields[1])
-				if chr < curr_chr:
-					print(str(line_numbers) + " WARNING 1.0.1: Chromosome position is larger then chromosome size")
+				if int(chr) < int(curr_chr):
+					print(str(line_numbers) + " WARNING 1.0.1: Chromosome numbers were not sorted")
 				else:
 					if not position.isdigit():
 						if chr != X or chr != Y:
@@ -237,7 +242,7 @@ for line in vcf_data:
 					else:
 						ref_bed.write(str(chr)+"\t"+str(prev_one)+"\t"+str(back_one))
 					ref_bed.close()
-					cmd = "bedtools2/bin/bedtools getfasta -fi "+str(fasta_for_validation)+" -bed ref_bed.bed -fo ref_out.bed"
+					cmd = "bedtools getfasta -fi "+str(fasta_for_validation)+" -bed ref_bed.bed -fo ref_out.bed"
 					subprocess.call(cmd.split())
 					output_bedtools = open( "ref_out.bed" ) or die("Failed to open the output file of bedtools")
 					for fasta_nuc in output_bedtools:
@@ -278,4 +283,7 @@ for line in vcf_data:
 					print(str(line_numbers) + " WARNING 1.0.1: Alternative allele missing")
 else:
 	print (str(line_numbers) + " All lines of vcf were validated! Please check errors and/or warnings in the log file")
+
+elapsed_time = time.time() - start_time
+print (f'elapsed_time: {int(elapsed_time)} sec')
 vcf_data.close()
