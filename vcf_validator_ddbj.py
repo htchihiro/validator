@@ -95,7 +95,7 @@ vcf_lines = reader(vcf_data)
 a = 0
 b = 0
 
-curr_chr = 0
+curr_chr = "0"
 previous_pos = 0
 
 #count of lines
@@ -180,24 +180,25 @@ for line in vcf_lines:
 				fields = line.split()
 				chr_number = fields[0]
 				chr = str(chr_number.replace('chr', ''))
+				if not re.match("(\d+|X|Y)", chr):
+						print(str(line_numbers) + " WARNING JV_VR00XX: Chromosome numbers should be 'chr' + number or 'chrX' or 'chrY'")
+				if chr.isdigit() and curr_chr.isdigit():
+					if int(chr) < int(curr_chr):
+						print(str(line_numbers) + " WARNING JV_VR0025: Chromosome numbers were not sorted")
+				elif chr < curr_chr:
+						print(str(line_numbers) + " WARNING JV_VR0025: Chromosome numbers were not sorted")
 				position = str(fields[1])
 				if not position.isdigit():
-					if chr == X or chr == Y:
-						pass
-					else:
-						print(str(line_numbers) + " WARNING JV_VR0025: positions should be numbers")
-				elif int(chr) < int(curr_chr):
-						print(str(line_numbers) + " WARNING JV_VR0024: Chromosome numbers were not sorted")
+						print(str(line_numbers) + " WARNING JV_VR0024: positions should be numbers")
 				if chr == curr_chr:
-					if int(position) < int(previous_pos):
+					if str(position).isdigit() and str(previous_pos).isdigit() and (int(position) < int(previous_pos)):
 						print ("previous:" + position)
 						print ("now:" + previous_pos)
 						print(str(line_numbers) + " WARNING JV_VR0026: Data are not sorted base on positions")
 					else:
 						previous_pos = fields[1]
-				else:
-					curr_chr = chr
-					previous_pos = fields[1]
+				curr_chr = chr
+				previous_pos = fields[1]
 				if fields[3] == fields[4]:
 					print(str(line_numbers) + " WARNING JV_VR0027: Reference allele and alternative alleles are the same")
 				if re.search('[^ATGC]', fields[3]): #REF is only allowed for AGCT
