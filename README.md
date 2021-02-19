@@ -29,7 +29,11 @@ $ cp /your/path/reference.fasta.fai data/input_file/ # if available
 ```
 
 ### execute
+#### VCF validator
 ```
-$ docker-compose exec ddbj_vcf_validator python vcf_validator_ddbj.py /data/input_files/test1-SNV.vcf /data/input_files/chr9.fa
-$ docker-compose exec ddbj_vcf_validator bcftools norm -m -  -o /data/input_files/test1-SNV.vcf.gz -O z --threads 4 /data/input_files/test1-SNV.vcf -f /data/input_files/chr9.fa
+$ docker-compose exec ddbj_vcf_validator python vcf_validator_ddbj.py /data/input_files/test1-SNV.vcf /data/input_files/chr9.fa > data/result.log
+```
+#### bcftools
+```
+$ docker-compose exec ddbj_vcf_validator bcftools norm -m - -o /data/input_files/test1-SNV.vcf.gz -O z --threads 4 /data/input_files/test1-SNV.vcf -f /data/input_files/chr9.fa
 ```

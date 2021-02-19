@@ -37,8 +37,11 @@ import linecache
 import gzip
 import codecs
 import time
+import shutil
 
 start_time = time.time()
+output_tmp_dir = str(os.getcwd()) + "/tmp/" + str(start_time) + "/"
+os.mkdir(output_tmp_dir)
 
 vcf_exist = os.path.isfile(vcffile)
 if vcf_exist:
@@ -234,15 +237,15 @@ for line in vcf_lines:
 					else:
 						back_one = int(fields[1])
 					prev_one = int(fields[1]) - 1
-					ref_bed = open('ref_bed.bed','w')
+					ref_bed = open(output_tmp_dir + "ref_bed.bed", "w")
 					if chr_marke == 1 :
 						ref_bed.write("chr"+str(chr)+"\t"+str(prev_one)+"\t"+str(back_one))
 					else:
 						ref_bed.write(str(chr)+"\t"+str(prev_one)+"\t"+str(back_one))
 					ref_bed.close()
-					cmd = "bedtools getfasta -fi "+str(fasta_for_validation)+" -bed ref_bed.bed -fo ref_out.bed"
+					cmd = "bedtools getfasta -fi "+str(fasta_for_validation)+" -bed " + output_tmp_dir + "ref_bed.bed -fo " + output_tmp_dir + "ref_out.bed"
 					subprocess.call(cmd.split())
-					output_bedtools = open( "ref_out.bed" ) or die("Failed to open the output file of bedtools")
+					output_bedtools = open( output_tmp_dir + "ref_out.bed" ) or die("Failed to open the output file of bedtools")
 					for fasta_nuc in output_bedtools:
 						if re.search('>', fasta_nuc): #skip headder
 							pass
@@ -282,6 +285,7 @@ for line in vcf_lines:
 else:
 	print (str(line_numbers) + " All lines of vcf were validated! Please check errors and/or warnings in the log file")
 
+shutil.rmtree(output_tmp_dir)
 elapsed_time = time.time() - start_time
 print (f'elapsed_time: {int(elapsed_time)} sec')
 vcf_data.close()
