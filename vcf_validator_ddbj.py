@@ -181,7 +181,7 @@ for line in vcf_lines:
 				chr_number = fields[0]
 				chr = str(chr_number.replace('chr', ''))
 				if not re.match("(\d+|X|Y)", chr):
-						print(str(line_numbers) + " WARNING JV_VR00XX: Chromosome numbers should be 'chr' + number or 'chrX' or 'chrY'")
+						print(str(line_numbers) + " WARNING JV_VR00XX: Chromosome numbers should be UCSC format ('chr' + number or 'chrX' or 'chrY') or Ensembl format (number or 'X' or 'Y')")
 				if chr.isdigit() and curr_chr.isdigit():
 					if int(chr) < int(curr_chr):
 						print(str(line_numbers) + " WARNING JV_VR0025: Chromosome numbers were not sorted")
